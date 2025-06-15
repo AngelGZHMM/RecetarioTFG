@@ -1,0 +1,70 @@
+<div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h2>Iniciar Sesión</h2>
+        <p>Bienvenido de nuevo al Recetario</p>
+      </div>
+  
+      @if (errorMessage) {
+        <div class="error-message">
+          {{ errorMessage }}
+        </div>
+      }
+  
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="username">Nombre de Usuario</label>
+          <input 
+            type="text" 
+            id="username" 
+            formControlName="Nombre_de_usuario" 
+            placeholder="Ingrese su nombre de usuario"
+            [class.invalid]="loginForm.get('Nombre_de_usuario')?.invalid && loginForm.get('Nombre_de_usuario')?.touched"
+          >
+          @if (loginForm.get('Nombre_de_usuario')?.invalid && loginForm.get('Nombre_de_usuario')?.touched) {
+            <div class="error-hint">El nombre de usuario es obligatorio</div>
+          }
+        </div>
+  
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input 
+            type="password" 
+            id="password" 
+            formControlName="Contrasena" 
+            placeholder="Ingrese su contraseña"
+            [class.invalid]="loginForm.get('Contrasena')?.invalid && loginForm.get('Contrasena')?.touched"
+          >
+          @if (loginForm.get('Contrasena')?.invalid && loginForm.get('Contrasena')?.touched) {
+            <div class="error-hint">
+              @if (loginForm.get('Contrasena')?.errors?.['required']) {
+                La contraseña es obligatoria
+              } @else if (loginForm.get('Contrasena')?.errors?.['minlength']) {
+                La contraseña debe tener al menos 6 caracteres
+              }
+            </div>
+          }
+        </div>
+  
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            class="btn-submit" 
+            [disabled]="loginForm.invalid || isLoading"
+          >
+            @if (isLoading) {
+              <span class="spinner"></span>
+              Iniciando sesión...
+            } @else {
+              Iniciar Sesión
+            }
+          </button>
+        </div>
+      </form>
+  
+      <div class="auth-footer">
+        <p>¿No tienes una cuenta? <a routerLink="/registro">Regístrate aquí</a></p>
+        <p><a routerLink="/forgot-password" class="forgot-link">¿Olvidaste tu contraseña?</a></p>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,70 @@
+.admin-menu-container {
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 32px 24px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  text-align: center;
+}
+
+.admin-menu-container h2 {
+  margin-bottom: 24px;
+  font-size: 2rem;
+  color: #2d3a4a;
+}
+
+.admin-menu-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+}
+
+.admin-menu-list li {
+  margin-bottom: 16px;
+}
+
+.admin-menu-btn {
+  width: 100%;
+  padding: 12px 20px;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 8px;
+  background: #e3e7ed;
+  color: #2d3a4a;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: not-allowed;
+  opacity: 0.7;
+  transition: background 0.2s;
+}
+
+.admin-menu-btn .icon {
+  font-size: 1.4rem;
+}
+
+.admin-menu-info {
+  color: #888;
+  font-size: 0.98rem;
+  margin-top: 12px;
+}
+
+button.admin-menu-btn[disabled] {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+a.admin-menu-btn {
+  opacity: 1;
+  cursor: pointer;
+  text-decoration: none;
+  background: #e3e7ed;
+  color: #2d3a4a;
+  transition: background 0.2s;
+}
+
+a.admin-menu-btn:hover {
+  background: #4f8cff;
+  color: #fff;
+}

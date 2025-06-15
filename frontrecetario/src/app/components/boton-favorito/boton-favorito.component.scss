@@ -1,0 +1,176 @@
+.boton-favorito {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent !important; // Fondo completamente transparente
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 50%;
+  padding: 0.25rem;
+  position: relative;
+  font-family: inherit;
+
+  // Estados básicos
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none !important;
+  }
+
+  // Contenedor del corazón
+  &__corazon-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  // Contador interno del corazón
+  &__contador-interno {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    z-index: 2;
+    line-height: 1;
+  }  // Tamaños
+  &--small {
+    padding: 0.125rem;
+    font-size: 1.5rem; // Duplicado: de 1.2rem a 2.4rem
+
+    .boton-favorito__contador-interno {
+      font-size: 1rem; // Duplicado: de 0.55rem a 1.1rem
+    }
+  }
+
+  &--medium {
+    padding: 0.25rem;
+    font-size: 3.6rem; // Duplicado: de 1.8rem a 3.6rem
+
+    .boton-favorito__contador-interno {
+      font-size: 1.3rem; // Duplicado: de 0.65rem a 1.3rem
+    }
+  }
+  
+  &--large {
+    padding: 0.375rem;
+    font-size: 4.6rem; // Duplicado: de 2.3rem a 4.6rem
+
+    .boton-favorito__contador-interno {
+      font-size: 1.5rem; // Duplicado: de 0.75rem a 1.5rem
+    }
+  }
+
+  // Estado de carga
+  &--cargando {
+    .fas:not(.boton-favorito__spinner) {
+      opacity: 0.3;
+    }
+  }
+
+  // Elementos internos
+  &__spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  &__texto {
+    white-space: nowrap;
+    font-weight: 500;
+    margin-left: 0.5rem;
+  }
+  // Estilos del corazón
+  .fa-heart {
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    
+    &.fas {
+      color: #ff4757; // Rojo para corazón lleno (favorito)
+      animation: heartbeat 0.6s ease-in-out;
+    }
+    
+    &.far {
+      color: #999; // Gris para corazón vacío (no favorito)
+    }
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+  // Estado de favorito
+  &--favorito {
+    .fa-heart {
+      color: #ff4757 !important;
+    }
+    
+    .boton-favorito__contador-interno {
+      color: white;
+    }
+  }
+  
+  // Estado no favorito
+  &:not(.boton-favorito--favorito) {
+    .fa-heart {
+      color: #999 !important;
+    }
+    
+    .boton-favorito__contador-interno {
+      color: #000; // Negro para mayor contraste
+      text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+    }
+  }
+  // Responsividad
+  @media (max-width: 768px) {
+    &--large {
+      font-size: 3rem; // Duplicado: de 1.5rem a 3rem
+    }
+    
+    &--medium {
+      font-size: 2.5rem; // Duplicado: de 1.25rem a 2.5rem
+    }
+
+    &--small {
+      font-size: 2rem; // Duplicado: de 1rem a 2rem
+    }
+  }
+
+  // Responsive: solo corazón y contador en móvil
+  @media (max-width: 600px) {
+    .boton-favorito__texto {
+      display: none !important;
+    }
+  }
+}
+
+// Animación de latido del corazón
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+:host-context(body.dark-theme) .boton-favorito__texto,
+:host-context(body.dark-theme) .boton-favorito__contador-interno {
+  color: #e3eafc !important;
+}

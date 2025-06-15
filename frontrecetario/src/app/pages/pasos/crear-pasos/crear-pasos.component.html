@@ -1,0 +1,109 @@
+<div class="crear-pasos-container">
+  <div class="header">
+    <h1>Crear Nuevo Paso</h1>
+    <h2 *ngIf="recetaInfo.nombre">{{ recetaInfo.nombre }}</h2>
+    <div class="subtitle">Paso #{{ orden > 0 ? orden : '?' }}</div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <p>Cargando información...</p>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
+  <form [formGroup]="pasoForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+    <!-- Descripción del paso -->
+    <div class="form-group">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Descripción</mat-label>
+        <textarea matInput formControlName="descripcion" rows="4" placeholder="Describe detalladamente este paso de la receta..."></textarea>
+        <mat-hint align="start" *ngIf="pasoForm.get('descripcion')?.value && pasoForm.get('descripcion')?.value.length < 7" style="color: #f44336;">
+          <strong>* Tu descripción tiene {{ pasoForm.get('descripcion')?.value?.length || 0 }}/7 caracteres mínimos requeridos</strong>
+        </mat-hint>
+        <mat-hint align="end">Mínimo 7 caracteres</mat-hint>
+        <mat-error *ngIf="pasoForm.get('descripcion')?.hasError('required') && pasoForm.get('descripcion')?.touched">
+          La descripción es obligatoria
+        </mat-error>
+        <mat-error *ngIf="pasoForm.get('descripcion')?.hasError('minlength') && pasoForm.get('descripcion')?.touched">
+          La descripción debe tener al menos 7 caracteres (actual: {{ pasoForm.get('descripcion')?.value?.length || 0 }})
+        </mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- Detalles del ingrediente usado en el paso -->
+    <div class="form-row">
+      <div class="form-group">
+        <mat-form-field appearance="outline">
+          <mat-label>Ingrediente (opcional)</mat-label>
+          <input matInput formControlName="ingrediente" placeholder="Ej: Azúcar, Aceite de oliva">
+          <mat-icon matSuffix>restaurant</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="form-group">
+        <mat-form-field appearance="outline">
+          <mat-label>Cantidad (opcional)</mat-label>
+          <input matInput type="number" formControlName="cantidad" placeholder="Ej: 100">
+          <mat-icon matSuffix>scale</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <div class="form-group">
+        <mat-form-field appearance="outline">
+          <mat-label>Unidad de medida (opcional)</mat-label>
+          <input matInput formControlName="unidad_medida" placeholder="Ej: g, ml, cucharadas">
+          <mat-icon matSuffix>straighten</mat-icon>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Tipo de paso y duración -->
+    <div class="form-row">
+      <div class="form-group">
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo de paso</mat-label>
+          <mat-select formControlName="tipo">
+            <mat-option *ngFor="let tipo of tiposPaso" [value]="tipo">
+              {{ tipo | titlecase }}
+            </mat-option>
+          </mat-select>
+          <mat-icon matSuffix>category</mat-icon>
+          <mat-error *ngIf="pasoForm.get('tipo')?.invalid && pasoForm.get('tipo')?.touched">
+            El tipo de paso es obligatorio
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-group">
+        <mat-form-field appearance="outline">
+          <mat-label>Duración (minutos)</mat-label>
+          <input matInput type="number" formControlName="duracion" min="1">
+          <mat-icon matSuffix>schedule</mat-icon>
+          <mat-hint>Tiempo estimado para este paso</mat-hint>
+          <mat-error *ngIf="pasoForm.get('duracion')?.invalid && pasoForm.get('duracion')?.touched">
+            La duración es obligatoria y debe ser mayor a 0
+          </mat-error>
+        </mat-form-field>
+      </div>
+    </div>
+
+    <!-- Checkbox para paso necesario -->
+    <div class="form-group checkbox-group">
+      <mat-checkbox formControlName="necesario" color="primary">
+        Este paso es necesario para completar correctamente la receta
+      </mat-checkbox>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="button-container">
+      <button mat-button type="button" (click)="cancelar()">
+        Cancelar
+      </button>
+      <button mat-raised-button type="submit" [disabled]="pasoForm.invalid">
+        Guardar paso
+      </button>
+    </div>
+  </form>
+</div>

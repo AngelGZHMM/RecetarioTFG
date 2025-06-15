@@ -1,0 +1,124 @@
+<header class="header">
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <a routerLink="/">
+            <h1>Recetario</h1>
+          </a>
+        </div>
+
+        <!-- Botón hamburguesa para móviles -->
+        <button class="hamburger-menu" (click)="toggleMobileMenu()">
+          <span [class.active]="isMobileMenuOpen"></span>
+          <span [class.active]="isMobileMenuOpen"></span>
+          <span [class.active]="isMobileMenuOpen"></span>
+        </button>
+        
+        <!-- Navegación principal para desktop -->
+        <nav class="main-nav desktop-nav">
+          <ul>
+            <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Inicio</a></li>
+            @if (isLoggedIn) {
+              <li><a routerLink="/explorar" routerLinkActive="active">Explorar</a></li>
+              <li><a routerLink="/mis-recetas" routerLinkActive="active">Mis Recetas</a></li>
+              <li><a routerLink="/crear-receta" routerLinkActive="active">Crear Receta</a></li>
+              <li><a routerLink="/buscar-usuarios" routerLinkActive="active">Buscar Usuarios</a></li>
+            }
+          </ul>
+        </nav>
+        
+        <!-- Acciones de usuario para desktop -->
+        <div class="user-actions desktop-actions">
+          <button class="theme-toggle" (click)="toggleDarkMode()">
+            @if (isDarkMode) {
+              <span>☀️</span>
+            } @else {
+              <span>🌙</span>
+            }
+          </button>
+
+          @if (isLoggedIn) {
+            <div class="user-menu" [class.menu-open]="isMenuOpen">
+              <span class="username" (click)="toggleMenu()">
+                Hola, {{username}}
+                <div class="user-avatar">
+                  <img [src]="fotoPerfil || defaultAvatar" 
+                       [alt]="username + ' avatar'" 
+                       class="avatar-image"
+                       (error)="onImageError($event)">
+                </div>
+              </span>
+              <div class="dropdown-menu" [class.open]="isMenuOpen">
+                <a routerLink="/perfil" (click)="closeMenu()">Mi Perfil</a>
+                <a routerLink="/favoritos" (click)="closeMenu()">Mis Favoritos</a>
+                <a *ngIf="isAdmin" routerLink="/administracion/menu" (click)="closeMenu()" class="dropdown-item">
+                  <span class="icon">⚙️</span> Gestión de Administración
+                </a>
+                <button (click)="logout()">Cerrar Sesión</button>
+              </div>
+            </div>
+          } @else {
+            <div class="auth-buttons">
+              <a *ngIf="currentRoute !== '/login'" routerLink="/login" class="btn btn-login">Iniciar Sesión</a>
+              <a *ngIf="currentRoute !== '/registro'" routerLink="/registro" class="btn btn-register">Registrarse</a>
+            </div>
+          }
+        </div>
+      </div>      <!-- Navegación móvil -->
+      <nav class="mobile-nav" [class.open]="isMobileMenuOpen">
+        <div class="mobile-nav-content">
+          <!-- Botón cerrar menú móvil -->
+          <button class="mobile-close-btn" (click)="closeMobileMenu()">
+            <span>✕</span>
+          </button>
+          
+          <!-- Enlaces de navegación -->
+          <ul class="mobile-nav-links">
+            <li><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="closeMobileMenu()">Inicio</a></li>
+            @if (isLoggedIn) {
+              <li><a routerLink="/explorar" routerLinkActive="active" (click)="closeMobileMenu()">Explorar</a></li>
+              <li><a routerLink="/mis-recetas" routerLinkActive="active" (click)="closeMobileMenu()">Mis Recetas</a></li>
+              <li><a routerLink="/crear-receta" routerLinkActive="active" (click)="closeMobileMenu()">Crear Receta</a></li>
+              <li><a routerLink="/buscar-usuarios" routerLinkActive="active" (click)="closeMobileMenu()">Buscar Usuarios</a></li>
+            }
+          </ul>
+
+          <!-- Acciones de usuario móvil -->
+          <div class="mobile-user-actions">
+            <button class="theme-toggle mobile-theme-toggle" (click)="toggleDarkMode()">
+              @if (isDarkMode) {
+                <span>☀️</span> Modo Claro
+              } @else {
+                <span>🌙</span> Modo Oscuro
+              }
+            </button>
+
+            @if (isLoggedIn) {
+              <div class="mobile-user-info">
+                <div class="mobile-user-avatar">
+                  <img [src]="fotoPerfil || defaultAvatar" 
+                       [alt]="username + ' avatar'" 
+                       class="avatar-image"
+                       (error)="onImageError($event)">
+                  <span class="mobile-username">{{username}}</span>
+                </div>
+                <div class="mobile-user-links">
+                  <a routerLink="/perfil" (click)="closeMobileMenu()">Mi Perfil</a>
+                  <a routerLink="/favoritos" (click)="closeMobileMenu()">Mis Favoritos</a>
+                  <a *ngIf="isAdmin" routerLink="/administracion/menu" (click)="closeMobileMenu()">
+                    <span class="icon">⚙️</span> Administración
+                  </a>
+                  <button class="logout-btn" (click)="logout()">Cerrar Sesión</button>
+                </div>
+              </div>
+            } @else {
+              <div class="mobile-auth-buttons">
+                <a *ngIf="currentRoute !== '/login'" routerLink="/login" class="btn btn-login" (click)="closeMobileMenu()">Iniciar Sesión</a>
+                <a *ngIf="currentRoute !== '/registro'" routerLink="/registro" class="btn btn-register" (click)="closeMobileMenu()">Registrarse</a>
+              </div>
+            }
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>

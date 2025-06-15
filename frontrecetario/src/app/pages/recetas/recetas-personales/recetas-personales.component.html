@@ -1,0 +1,215 @@
+<div >
+  <div class="mis-recetas-bar">
+    <h2>Mis Recetas</h2>
+      <!-- Barra de filtros unificada -->
+    <div class="filter-bar">
+      <div class="filter-controls">        <select [(ngModel)]="filterCriteria" (change)="onFilterChange()">
+          <option value="nombre">Nombre</option>
+          <option value="fecha_creacion">Fecha de Creación</option>
+          <option value="fecha_publicacion">Fecha de Publicación</option>          <option value="categoria">Categoría</option>
+          <option value="dificultad">Dificultad</option>
+          <option value="origen">Origen</option>
+          <option value="ingrediente">Ingrediente</option>
+          <option value="favoritos">Favoritos</option>
+        </select>
+
+        <ng-container *ngIf="filterCriteria === 'fecha_creacion'">
+          <div class="date-range-container">
+            <div class="date-input-group">
+              <label>Fecha de Creación - Desde:</label>
+              <input 
+                type="date" 
+                [(ngModel)]="fechaDesde"
+                (change)="onFilterChange()"
+                placeholder="Fecha desde"
+              />
+            </div>
+            <div class="date-input-group">
+              <label>Hasta:</label>
+              <input 
+                type="date" 
+                [(ngModel)]="fechaHasta"
+                (change)="onFilterChange()"
+                placeholder="Fecha hasta"
+              />
+            </div>
+          </div>
+        </ng-container>
+        
+        <ng-container *ngIf="filterCriteria === 'fecha_publicacion'">
+          <div class="date-range-container">
+            <div class="date-input-group">
+              <label>Fecha de Publicación - Desde:</label>
+              <input 
+                type="date" 
+                [(ngModel)]="fechaDesde"
+                (change)="onFilterChange()"
+                placeholder="Fecha desde"
+              />
+            </div>
+            <div class="date-input-group">
+              <label>Hasta:</label>
+              <input 
+                type="date" 
+                [(ngModel)]="fechaHasta"
+                (change)="onFilterChange()"
+                placeholder="Fecha hasta"
+              />
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="filterCriteria === 'categoria'">
+          <select [(ngModel)]="searchQuery" (change)="onFilterChange()" class="category-select">
+            <option value="">Seleccionar categoría...</option>
+            <option *ngFor="let categoria of categorias" [value]="categoria">{{ categoria }}</option>
+          </select>
+        </ng-container>        <ng-container *ngIf="filterCriteria === 'dificultad'">
+          <select [(ngModel)]="searchQuery" (change)="onFilterChange()" class="category-select">
+            <option value="">Seleccionar dificultad...</option>
+            <option *ngFor="let dificultad of dificultades" [value]="dificultad">{{ dificultad }}</option>
+          </select>
+        </ng-container>
+
+        <ng-container *ngIf="filterCriteria === 'origen'">
+          <select [(ngModel)]="searchQuery" (change)="onFilterChange()" class="category-select">
+            <option value="">Seleccionar origen...</option>
+            <option *ngFor="let origen of origenes" [value]="origen">{{ origen }}</option>
+          </select>
+        </ng-container><ng-container *ngIf="filterCriteria === 'ingrediente'">
+          <div class="ingredientes-filter-container">
+            <label>Selecciona ingredientes:</label>
+            <div class="ingredientes-list">
+              <select multiple [(ngModel)]="ingredientesSeleccionados" (change)="onSearch()">
+                <option *ngFor="let ingrediente of ingredientesDisponibles" [ngValue]="ingrediente">
+                  {{ ingrediente.Nombre }}
+                </option>
+              </select>
+            </div>            <div class="ingredientes-seleccionados-container" *ngIf="ingredientesSeleccionados.length > 0">
+              <div class="ingredientes-seleccionados-header">Ingredientes seleccionados:</div>
+              <div class="ingredientes-seleccionados-list">
+                <span *ngFor="let ing of ingredientesSeleccionados" class="ingrediente-tag">
+                  {{ ing.Nombre }}
+                  <button type="button" class="remove-ingredient" (click)="quitarIngredienteSeleccionado(ing)">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="filterCriteria === 'favoritos'">
+          <div class="favoritos-filter-container">
+            <label>Ordenar por favoritos:</label>
+            <select [(ngModel)]="ordenFavoritos" (change)="onSearch()" class="favoritos-select">
+              <option value="">Seleccionar orden...</option>
+              <option value="desc">Mayor a Menor</option>
+              <option value="asc">Menor a Mayor</option>
+            </select>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="filterCriteria !== 'fecha_creacion' && filterCriteria !== 'fecha_publicacion' && filterCriteria !== 'categoria' && filterCriteria !== 'dificultad' && filterCriteria !== 'origen' && filterCriteria !== 'ingrediente' && filterCriteria !== 'favoritos'">
+          <input 
+            type="text" 
+            placeholder="Escribe para filtrar..." 
+            [(ngModel)]="searchQuery" 
+            (input)="onSearch()"
+          />
+        </ng-container>
+        
+        <button (click)="onSearch()" class="search-button">
+          <i class="fa fa-search"></i> Buscar
+        </button>
+      </div>
+    </div>
+
+    <div class="items-per-page-selector">
+      <label for="itemsPerPage">Recetas por página:</label>
+      <select id="itemsPerPage" [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()">
+        <option *ngFor="let option of [3, 6, 9, 12,15,30]" [value]="option">{{ option }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="recetas-container">    <div *ngFor="let receta of filteredRecetas" class="receta-card" (click)="verDetallesReceta(receta.receta_id)">
+      <div class="receta-header">
+        <h3>{{ receta.nombre }}</h3>
+        <!-- Botón de favoritos -->
+        <div class="boton-favoritos-container" *ngIf="isLoggedIn" (click)="$event.stopPropagation()">
+          <app-boton-favorito 
+            [recetaId]="receta.receta_id" 
+            [mostrarTexto]="false"
+            [tamaño]="'medium'"
+            [variante]="'outlined'">
+          </app-boton-favorito>
+        </div>
+      </div>
+      <p class="receta-descripcion">{{ receta.descripcion }}</p>
+      <img 
+        [src]="getImagenReceta(receta)"
+        alt="Imagen de {{ receta.nombre }}" 
+        class="receta-imagen"
+        (error)="onImgError(receta, $event)">
+      <div class="receta-info">
+        <span class="info-item"><i class="fas fa-clock"></i> {{ formatTiempo(receta.tiempo_total || (receta.tiempo_preparacion + (receta.tiempo_coccion || 0))) }}</span>        <span class="info-item"
+              [ngClass]="{
+                'dificultad-facil': receta.dificultad === 'Fácil',
+                'dificultad-media': receta.dificultad === 'Media',
+                'dificultad-dificil': receta.dificultad === 'Difícil'
+              }">
+          <i class="fas fa-signal"></i> {{ receta.dificultad }}        </span>        <span class="info-item"><i class="fas fa-users"></i> {{ receta.porciones }} porciones</span>
+      </div>
+      <!-- Botón de ver detalles que aparece al hacer hover -->
+      <div class="ver-detalle-btn">
+        <span>Ver detalles</span>
+      </div>
+    </div>
+</div>
+<div *ngIf="filteredRecetas.length === 0" class="no-recetas">
+  <h2>No has creado ninguna receta aún.</h2>
+  <p>¡Anímate a crear tu primera receta!</p>
+  <a routerLink="/crear-receta" class="btn btn-primary">Crear Receta</a>
+</div>
+<!-- Controles de paginación inteligente -->
+<div class="pagination-container" *ngIf="totalItems > 0">
+  <div class="pagination-info">
+    <span>Mostrando {{ ((currentPage - 1) * itemsPerPage) + 1 }}-{{ Math.min(currentPage * itemsPerPage, totalItems) }} de {{ totalItems }} recetas</span>
+  </div>
+  
+  <div class="pagination-controls-intelligent" *ngIf="getTotalPages() > 1">
+    <!-- Botón Anterior -->
+    <button 
+      class="pagination-btn pagination-prev" 
+      [disabled]="currentPage === 1"
+      (click)="goToPreviousPage()">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    
+    <!-- Números de página -->
+    <ng-container *ngFor="let page of getPageNumbers()">
+      <button 
+        *ngIf="page !== '...'"
+        class="pagination-btn pagination-number"
+        [class.active]="isCurrentPage(page)"
+        (click)="goToPage(page)">
+        {{ page }}
+      </button>
+      <span *ngIf="page === '...'" class="pagination-ellipsis">...</span>
+    </ng-container>
+    
+    <!-- Botón Siguiente -->
+    <button 
+      class="pagination-btn pagination-next" 
+      [disabled]="currentPage === getTotalPages()"
+      (click)="goToNextPage()">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+</div>
+</div>
+
+
+
+

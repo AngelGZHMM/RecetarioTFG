@@ -1,0 +1,46 @@
+@host = http://localhost:3000
+@contentType = application/json
+@authToken = {{login.response.body.datos.token}}
+
+### Login para obtener token
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "Nombre_de_usuario": "usuario_completo",
+  "Contraseña": "tu_contraseña_aqui"
+}
+
+### Crear un nuevo reporte
+POST {{host}}/api/reportes
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "usuario_id": 2,
+  "receta_id": 1,
+  "motivo": "Contenido inapropiado",
+  "descripcion": "La receta contiene imágenes ofensivas"
+}
+
+### Obtener todos los reportes (si existe el endpoint)
+GET {{host}}/api/reportes
+Authorization: Bearer {{authToken}}
+
+### Obtener un reporte específico
+GET {{host}}/api/reportes/1
+Authorization: Bearer {{authToken}}
+
+### Actualizar un reporte (ejemplo)
+PATCH {{host}}/api/reportes/1
+Content-Type: {{contentType}}
+Authorization: Bearer {{authToken}}
+
+{
+  "estado": "resuelto"
+}
+
+### Eliminar un reporte
+DELETE {{host}}/api/reportes/1
+Authorization: Bearer {{authToken}}

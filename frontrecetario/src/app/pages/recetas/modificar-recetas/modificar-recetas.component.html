@@ -1,0 +1,228 @@
+<div class="modificar-receta-container">
+  <!-- Pantalla de carga -->
+  <div *ngIf="cargando" class="loading">
+    <p>Cargando información de la receta...</p>
+  </div>
+
+  <!-- Mensajes de error -->
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+    <button (click)="cancelar()" class="back-button">Volver</button>
+  </div>
+  <!-- Formulario de modificación -->
+  <div *ngIf="!cargando && !error && puedeEditar">
+    <h2>Modificar Receta</h2>
+
+    <form #form="ngForm" (ngSubmit)="onSubmit(form)">
+      <div class="form-container">
+        <div class="form-field">
+          <label for="nombre">Nombre de la Receta</label>
+          <input type="text" id="nombre" name="nombre" [(ngModel)]="nombre" required maxlength="255" />
+          <div *ngIf="formErrors['nombre']" class="error-message">{{ formErrors['nombre'] }}</div>
+        </div>
+
+        <div class="form-field">
+          <label for="origen">Origen de la receta</label>
+          <select id="origen" name="origen" [(ngModel)]="origen" class="category-select">
+            <option value="">Seleccionar origen...</option>
+            <option *ngFor="let origen of origenes" [value]="origen">{{ origen }}</option>
+          </select>
+          <div *ngIf="formErrors['origen']" class="error-message">{{ formErrors['origen'] }}</div>
+        </div>
+
+        <div class="form-field full-width">
+          <label for="imagen">URL de la Imagen</label>
+          <input 
+            type="url" 
+            id="imagen" 
+            name="imagen" 
+            [(ngModel)]="imagen" 
+            required 
+            maxlength="2048" 
+            (input)="updateImagePreview(imagen)"
+            placeholder="https://ejemplo.com/imagen.jpg"
+          />
+          <div *ngIf="formErrors['imagen']" class="error-message">{{ formErrors['imagen'] }}</div>
+        </div>
+
+        <div class="form-field full-width" *ngIf="imagePreview || imageError">
+          <div class="image-preview-container">
+            <div class="image-preview" *ngIf="imagePreview && !imageError">
+              <img [src]="imagePreview" alt="Vista previa de la imagen" class="recipe-image-preview" />
+              <span class="preview-label">Vista previa de la imagen</span>
+            </div>
+            <div class="image-error" *ngIf="imageError">
+              <span class="error-icon">⚠️</span>
+              <span class="error-text">No se pudo cargar la imagen</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-field full-width">
+          <label for="videoLink">Enlace del Vídeo (Opcional)</label>
+          <input type="url" id="videoLink" name="videoLink" [(ngModel)]="videoLink" maxlength="255" (input)="updateVideoPreview($event)" placeholder="https://www.youtube.com/watch?v=..." />
+          <div *ngIf="formErrors['videoLink']" class="error-message">{{ formErrors['videoLink'] }}</div>
+        </div>
+
+        <div class="form-field full-width" *ngIf="videoPreview || videoError">
+          <div class="video-preview-container">
+            <div class="video-preview" *ngIf="videoPreview && !videoError">
+              <iframe [src]="videoPreview" frameborder="0" allowfullscreen class="recipe-video-preview"></iframe>
+              <p class="preview-label">Vista previa del video</p>
+            </div>
+            <div class="video-error" *ngIf="videoError">
+              <i class="error-icon">⚠️</i>
+              <p>No se pudo cargar el video. Verifica que sea una URL válida de YouTube.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-field full-width">
+          <label for="descripcion">Descripción</label>
+          <textarea id="descripcion" name="descripcion" [(ngModel)]="descripcion" required maxlength="255" placeholder="Describe tu receta..."></textarea>
+          <div *ngIf="formErrors['descripcion']" class="error-message">{{ formErrors['descripcion'] }}</div>
+        </div>
+
+        <div class="form-field">
+          <label for="fechaCreacion">Fecha de creación</label>
+          <input type="date" id="fechaCreacion" name="fechaCreacion" [(ngModel)]="fechaCreacion" />
+        </div>
+
+        <div class="checkbox-field">
+          <input type="checkbox" id="esPublica" name="esPublica" [(ngModel)]="esPublica" />
+          <label for="esPublica">Hacer receta pública</label>
+          <span [ngClass]="{'texto-verde': esPublica, 'texto-rojo': !esPublica}">
+            {{ esPublica ? 'Pública' : 'Privada' }}
+          </span>
+        </div>
+
+        <div class="checkbox-field">
+          <input type="checkbox" id="esCreacionPropia" name="esCreacionPropia" [(ngModel)]="esCreacionPropia" />
+          <label for="esCreacionPropia">¿Es creación propia?</label>
+          <span [ngClass]="{'texto-verde': esCreacionPropia, 'texto-rojo': !esCreacionPropia}">
+            {{ esCreacionPropia ? 'Propia' : 'Indica el propietario' }}
+          </span>
+        </div>
+      </div>      <div class="form-field full-width" *ngIf="!esCreacionPropia">
+        <label for="autorOriginal">Nombre del autor original</label>
+        <input type="text" id="autorOriginal" name="autorOriginal" [(ngModel)]="autorOriginal" maxlength="255" placeholder="Nombre del autor original..." />
+        <div *ngIf="formErrors['autorOriginal']" class="error-message">{{ formErrors['autorOriginal'] }}</div>      </div>
+
+      <!-- Información de tiempo -->
+      <div class="time-info-container">
+        <h3 class="section-title">⏱️ Información de Tiempo</h3>        <div class="time-info-grid">
+          <div class="time-field">
+            <label for="tiempo_preparacion">Preparación</label>
+            <input type="number" id="tiempo_preparacion" name="tiempo_preparacion" [(ngModel)]="tiempoPreparacion" required min="0" placeholder="0" (input)="calcularTiempoTotal()" />
+            <span class="time-unit">min</span>
+            <div *ngIf="formErrors['tiempo_preparacion']" class="error-message">{{ formErrors['tiempo_preparacion'] }}</div>
+          </div>
+
+          <div class="time-field">
+            <label for="tiempo_coccion">Cocción</label>
+            <input type="number" id="tiempo_coccion" name="tiempo_coccion" [(ngModel)]="tiempoCoccion" min="0" placeholder="0" (input)="calcularTiempoTotal()" />
+            <span class="time-unit">min</span>
+            <div *ngIf="formErrors['tiempo_coccion']" class="error-message">{{ formErrors['tiempo_coccion'] }}</div>
+          </div>
+        </div>
+        
+        <!-- Tiempo total calculado automáticamente -->
+        <div class="tiempo-total-info" *ngIf="tiempoTotalCalculado > 0">
+          <h3>⏱️ Tiempo Total de la Receta</h3>
+          <div class="tiempo-calculado">{{ tiempoTotalCalculado }} minutos</div>
+          <small class="tiempo-explicacion">
+            ({{ tiempoPreparacion || 0 }} min preparación + {{ tiempoCoccion || 0 }} min cocción)
+          </small>
+        </div>
+      </div>
+
+      <!-- Información adicional -->
+      <div class="form-container">
+        <div class="form-field">
+          <label for="categoria">Categoría</label>
+          <select id="categoria" name="categoria" [(ngModel)]="categoria" class="category-select">
+            <option value="">Seleccionar categoría...</option>
+            <option value="Postre">Postre</option>
+            <option value="Plato principal">Plato principal</option>
+            <option value="Entrada">Entrada</option>
+            <option value="Bebida">Bebida</option>
+          </select>
+        </div>        <div class="form-field">
+          <label for="porciones">Porciones</label>
+          <input type="number" id="porciones" name="porciones" [(ngModel)]="porciones" required min="1" placeholder="4" />
+          <div *ngIf="formErrors['porciones']" class="error-message">{{ formErrors['porciones'] }}</div>
+        </div>
+
+        <div class="form-field">
+          <label for="calorias_totales">Calorías totales</label>
+          <input type="number" id="calorias_totales" name="calorias_totales" [(ngModel)]="calorias_totales" min="0" placeholder="350" />
+          <div *ngIf="formErrors['calorias_totales']" class="error-message">{{ formErrors['calorias_totales'] }}</div>
+        </div>
+
+        <div class="form-field">
+          <label for="dificultad">Dificultad</label>
+          <select id="dificultad" name="dificultad" [(ngModel)]="dificultad" required class="category-select">
+            <option value="">Seleccionar dificultad...</option>
+            <option value="Fácil">Fácil</option>
+            <option value="Media">Media</option>
+            <option value="Difícil">Difícil</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Ingredientes -->
+      <div class="ingredients-container">
+        <h3 class="section-title">🥘 Ingredientes</h3>
+        <div class="form-field full-width">
+          <label for="ingredientes">Agregar Ingredientes</label>
+          <select id="ingredientes" (change)="agregarIngrediente($event)" class="category-select">
+            <option value="" disabled selected>Selecciona un ingrediente</option>
+            <option *ngFor="let ingrediente of getIngredientesDisponiblesParaAgregar()" [value]="ingrediente.ingrediente_id">
+              {{ ingrediente.Nombre }}
+            </option>
+          </select>
+          <div *ngIf="formErrors['ingredientes']" class="error-message">{{ formErrors['ingredientes'] }}</div>
+        </div>
+
+        <!-- Lista de ingredientes seleccionados -->
+        <div class="ingredients-list" *ngIf="ingredientesSeleccionados.length > 0">
+          <h4 class="ingredients-list-title">Ingredientes seleccionados:</h4>
+          <div class="ingredients-grid">
+            <div *ngFor="let ingrediente of ingredientesSeleccionados; let i = index" class="ingredient-form">
+              <div class="ingredient-header">
+                <span class="ingredient-name">{{ ingrediente.Nombre }}</span>
+                <button type="button" (click)="eliminarIngrediente(i)" class="remove-ingredient-btn">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="ingredient-inputs">
+                <input 
+                  type="number" 
+                  placeholder="Cantidad" 
+                  [(ngModel)]="ingrediente.cantidad" 
+                  name="cantidad{{ i }}" 
+                  min="0" 
+                  class="cantidad-input"
+                />                <select [(ngModel)]="ingrediente.unidad" name="unidad{{ i }}" class="unidad-select">
+                  <optgroup *ngFor="let grupo of unidadesMedidaGrupos" [label]="grupo.nombre">
+                    <option *ngFor="let unidad of grupo.unidades" [value]="unidad.valor">{{ unidad.texto }}</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>      <div *ngIf="formErrors['general']" class="error-message general-error">
+        {{ formErrors['general'] }}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="submit-button">
+          <i class="fas fa-save"></i> Guardar cambios
+        </button>
+        <button type="button" (click)="cancelar()" class="back-button">
+          <i class="fas fa-arrow-left"></i> Cancelar
+        </button>
+      </div>    </form>
+  </div>
+</div>

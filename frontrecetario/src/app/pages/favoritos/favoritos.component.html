@@ -1,0 +1,224 @@
+<div class="favoritos-page">
+  <!-- Header de la página -->
+  <div class="favoritos-header">
+    <div class="container">
+      <h1 class="favoritos-title">
+        <i class="fas fa-heart"></i>
+        Mis Recetas Favoritas
+      </h1>
+      <p class="favoritos-subtitle" *ngIf="totalElementos > 0">
+        {{ totalElementos }} {{ totalElementos === 1 ? 'receta favorita' : 'recetas favoritas' }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="container">
+    
+    <!-- Estado de carga -->
+    <div *ngIf="cargando" class="loading-state">
+      <div class="spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+      </div>
+      <p>Cargando tus recetas favoritas...</p>
+    </div>
+
+    <!-- Estado de error -->
+    <div *ngIf="error && !cargando" class="error-state">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Error al cargar favoritos</h3>
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="cargarFavoritos()">
+        <i class="fas fa-redo"></i>
+        Reintentar
+      </button>    </div>
+
+    <!-- Barra de filtros avanzada -->
+    <div class="favoritos-actions-bar">
+      <div class="items-per-page-selector">
+        <label for="itemsPerPage">Recetas por página:</label>
+        <select id="itemsPerPage" [(ngModel)]="elementosPorPagina" (change)="cambiarElementosPorPagina()">
+          <option *ngFor="let option of [3, 6, 9, 12,15,30]" [value]="option">{{ option }}</option>
+        </select>
+      </div>      <div class="filter-bar">
+        <select [(ngModel)]="filterCriteria" (change)="onFilterChange()">
+          <option value="nombre">Nombre</option>
+          <option value="dificultad">Dificultad</option>
+          <option value="categoria">Categoría</option>
+          <option value="fecha_creacion">Fecha de Creación</option>
+          <option value="fecha_publicacion">Fecha de Publicación</option>
+          <option value="origen">Origen</option>
+          <option value="ingrediente">Ingrediente</option>
+        </select>        <!-- Filtro por texto general -->
+        <ng-container *ngIf="filterCriteria !== 'fecha_creacion' && filterCriteria !== 'fecha_publicacion' && filterCriteria !== 'categoria' && filterCriteria !== 'dificultad' && filterCriteria !== 'origen' && filterCriteria !== 'ingrediente'">
+          <input type="text" placeholder="Buscar..." [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" />
+        </ng-container>
+        <!-- Filtro por categoría -->
+        <ng-container *ngIf="filterCriteria === 'categoria'">
+          <select [(ngModel)]="searchQuery" class="category-select">
+            <option value="">Seleccionar categoría...</option>
+            <option *ngFor="let categoria of categorias" [value]="categoria">{{ categoria }}</option>
+          </select>
+        </ng-container>        <!-- Filtro por dificultad -->
+        <ng-container *ngIf="filterCriteria === 'dificultad'">
+          <select [(ngModel)]="searchQuery" class="category-select">
+            <option value="">Seleccionar dificultad...</option>
+            <option *ngFor="let dificultad of dificultades" [value]="dificultad">{{ dificultad }}</option>
+          </select>
+        </ng-container>
+
+        <!-- Filtro por origen -->
+        <ng-container *ngIf="filterCriteria === 'origen'">
+          <select [(ngModel)]="searchQuery" class="category-select">
+            <option value="">Seleccionar origen...</option>
+            <option *ngFor="let origen of origenes" [value]="origen">{{ origen }}</option>
+          </select>
+        </ng-container>
+        <!-- Filtro por rango de fechas -->
+        <ng-container *ngIf="filterCriteria === 'fecha_creacion' || filterCriteria === 'fecha_publicacion'">
+          <div class="date-range-container">
+            <div class="date-input-group">
+              <label>Desde:</label>
+              <input type="date" [(ngModel)]="fechaDesde" />
+            </div>
+            <div class="date-input-group">
+              <label>Hasta:</label>
+              <input type="date" [(ngModel)]="fechaHasta" />
+            </div>
+          </div>
+        </ng-container>        <!-- Filtro por ingrediente -->
+        <ng-container *ngIf="filterCriteria === 'ingrediente'">
+          <div class="ingredientes-filter-container">
+            <label>Selecciona ingredientes:</label>
+            
+            <!-- Select para agregar ingredientes -->
+            <div class="ingrediente-selector" *ngIf="ingredientesNoSeleccionados.length > 0">
+              <select (change)="onIngredientSelect($event)" class="ingrediente-select">
+                <option value="">Agregar ingrediente...</option>
+                <option *ngFor="let ingrediente of ingredientesNoSeleccionados" [value]="ingrediente.ingrediente_id">
+                  {{ ingrediente.Nombre }}
+                </option>
+              </select>
+            </div>
+            
+            <!-- Lista de ingredientes seleccionados -->
+            <div class="ingredientes-seleccionados-container" *ngIf="ingredientesSeleccionados.length > 0">
+              <div class="ingredientes-seleccionados-header">
+                <span>Ingredientes seleccionados ({{ ingredientesSeleccionados.length }}):</span>
+              </div>
+              <div class="ingredientes-seleccionados-list">
+                <span *ngFor="let ing of ingredientesSeleccionados" class="ingrediente-tag">
+                  {{ ing.Nombre }}
+                  <button type="button" class="remove-ingredient" (click)="quitarIngredienteSeleccionado(ing)" title="Quitar ingrediente">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </span>
+              </div>
+            </div>
+            
+            <!-- Mensaje cuando no hay más ingredientes disponibles -->
+            <div *ngIf="ingredientesNoSeleccionados.length === 0 && ingredientesSeleccionados.length > 0" class="all-selected-message">
+              <i class="fas fa-check-circle"></i>
+              <span>Todos los ingredientes disponibles han sido seleccionados</span>
+            </div>
+            
+            <!-- Mensaje cuando no hay ingredientes seleccionados -->
+            <div *ngIf="ingredientesSeleccionados.length === 0" class="no-selection-message">
+              <i class="fas fa-info-circle"></i>
+              <span>Selecciona uno o más ingredientes del menú desplegable</span>
+            </div>
+          </div>
+        </ng-container>        <button (click)="onSearch()" class="search-button">
+          <i class="fa fa-search"></i> Buscar
+        </button>      </div>
+    </div>
+
+    <!-- Estado vacío (movido aquí después de los filtros) -->
+    <div *ngIf="!cargando && !error && favoritos.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <i class="far fa-heart"></i>
+      </div>
+      <h4>No tienes recetas favoritas aún</h4>
+      <h3>¡Tu colección de favoritos está esperando!</h3>
+      <p>Descubre deliciosas recetas y guarda las que más te enamoren para cocinar cuando quieras</p>
+      <button class="btn btn-primary" (click)="router.navigate(['/explorar'])">
+        <i class="fas fa-search"></i>
+        Explorar Recetas
+      </button>
+    </div>
+
+    <!-- Grid de recetas favoritas -->
+    <div *ngIf="!cargando && !error && favoritos.length > 0" class="favoritos-content">
+      <div class="recetas-container">
+        <div *ngFor="let favorito of favoritos" class="receta-item">
+          <div class="receta-header">
+            <h3>{{ favorito.receta.nombre }}</h3>
+            <div class="boton-favoritos-container">
+              <app-boton-favorito 
+                [recetaId]="favorito.receta.receta_id" 
+                [mostrarTexto]="false"
+                [tamaño]="'medium'"
+                [variante]="'outlined'">
+              </app-boton-favorito>
+            </div>
+          </div>
+          <p class="receta-descripcion" (click)="verDetalleReceta(favorito.receta.receta_id)">{{ favorito.receta.descripcion }}</p>
+          <img 
+            [src]="getImagenReceta(favorito.receta)"
+            [alt]="favorito.receta.nombre" 
+            class="receta-imagen" 
+            (click)="verDetalleReceta(favorito.receta.receta_id)"
+            (error)="onImgError(favorito.receta, $event)">
+          <div class="receta-info" (click)="verDetalleReceta(favorito.receta.receta_id)">
+            <span class="info-item"><i class="fas fa-clock"></i> {{ formatearTiempo(favorito.receta.tiempo_total || (favorito.receta.tiempo_preparacion + (favorito.receta.tiempo_coccion || 0))) }}</span>
+            <span class="info-item"><i class="fas fa-signal"></i> {{ favorito.receta.dificultad }}</span>
+            <span class="info-item"><i class="fas fa-users"></i> {{ favorito.receta.porciones }} {{ favorito.receta.porciones === 1 ? 'porción' : 'porciones' }}</span>
+          </div>
+          <div class="favorito-fecha">
+            <i class="fas fa-heart"></i>
+            Agregado el {{ favorito.fecha_favorito | date:'dd/MM/yyyy' }}
+          </div>
+          <div class="ver-detalle-btn" (click)="verDetalleReceta(favorito.receta.receta_id)">
+            <span>Ver detalles</span>
+          </div>
+        </div>
+      </div>      <!-- Paginación inteligente -->
+      <div class="pagination-container" *ngIf="totalElementos > 0">
+        <div class="pagination-info">
+          <span>Mostrando {{ ((paginaActual - 1) * elementosPorPagina) + 1 }}-{{ Math.min(paginaActual * elementosPorPagina, totalElementos) }} de {{ totalElementos }} recetas favoritas</span>
+        </div>
+        
+        <div class="pagination-controls-intelligent" *ngIf="getTotalPages() > 1">
+          <!-- Botón Anterior -->
+          <button 
+            class="pagination-btn pagination-prev" 
+            [disabled]="paginaActual === 1"
+            (click)="goToPreviousPage()">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          
+          <!-- Números de página -->
+          <ng-container *ngFor="let page of getPageNumbers()">
+            <button 
+              *ngIf="page !== '...'"
+              class="pagination-btn pagination-number"
+              [class.active]="isCurrentPage(page)"
+              (click)="goToPage(page)">
+              {{ page }}
+            </button>
+            <span *ngIf="page === '...'" class="pagination-ellipsis">...</span>
+          </ng-container>
+          
+          <!-- Botón Siguiente -->
+          <button 
+            class="pagination-btn pagination-next" 
+            [disabled]="paginaActual === getTotalPages()"
+            (click)="goToNextPage()">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

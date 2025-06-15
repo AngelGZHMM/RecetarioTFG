@@ -1,0 +1,87 @@
+<div class="home-container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-content">
+        <h1>Descubre el Arte de Cocinar</h1>
+        <p>Explora miles de recetas, comparte tus creaciones y conecta con otros amantes de la cocina</p>
+        
+        @if (!isLoggedIn) {
+          <div class="hero-buttons">
+            <a routerLink="/registro" class="btn btn-primary">Crear Cuenta</a>
+            <a routerLink="/login" class="btn btn-secondary">Iniciar Sesión</a>
+          </div>
+        } @else {
+          <div class="hero-buttons">
+            <a routerLink="/crear-receta" class="btn btn-primary">Crear Receta</a>
+            <a routerLink="/explorar" class="btn btn-secondary">Explorar Recetas</a>
+          </div>
+        }
+      </div>
+    </section>
+  
+    <!-- Features Section -->
+    <section class="features-section">
+      <div class="section-header">
+        <h2>¿Por qué unirte a nuestra comunidad?</h2>
+        <p>Descubre todas las ventajas de formar parte de Recetario</p>
+      </div>
+  
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📝</div>
+          <h3>Crea y Comparte</h3>
+          <p>Publica tus propias recetas y compártelas con nuestra comunidad de amantes de la cocina.</p>
+        </div>
+  
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h3>Descubre</h3>
+          <p>Explora miles de recetas de todo el mundo y encuentra inspiración para tus próximas comidas.</p>
+        </div>
+  
+        <div class="feature-card">
+          <div class="feature-icon">💬</div>
+          <h3>Conecta</h3>
+          <p>Interactúa con otros usuarios, comenta recetas y forma parte de una comunidad apasionada.</p>
+        </div>
+  
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3>Acceso Fácil</h3>
+          <p>Accede a tus recetas favoritas desde cualquier dispositivo, en cualquier momento.</p>
+        </div>
+      </div>
+    </section>
+  
+    <!-- Comentamos la sección de recetas destacadas para evitar la precarga de recetas -->
+    <!-- <section class="featured-recipes">
+      <h2>Recetas Destacadas</h2>
+      <div class="recipes-grid">
+        <div *ngFor="let recipe of featuredRecipes" class="recipe-card">
+          <img [src]="recipe.image" alt="{{ recipe.title }}">
+          <h3>{{ recipe.title }}</h3>
+          <p>{{ recipe.description }}</p>
+        </div>
+      </div>
+    </section> -->
+    <!-- Call to Action -->
+    @if (!isLoggedIn) {
+      <section class="cta-section">
+        <div class="cta-content">
+          <h2>¿Listo para empezar?</h2>
+          <p>Únete a nuestra comunidad y comienza a compartir tus recetas favoritas</p>
+          <a routerLink="/registro" class="btn btn-primary">Crear Cuenta Gratis</a>
+        </div>
+      </section>
+    }    <!-- Footer -->
+    <footer class="home-footer">
+      <div class="footer-content">
+        <div class="copyright">
+          <p>&copy; {{ currentYear }} Recetario - Plataforma de Recetas de Cocina</p>
+          <!-- <p class="creator-notice">📧 Creado y desarrollado por <strong>Ángel Galiano Zayandín</strong></p> -->
+          <p class="rights-notice">🔒 Todos los derechos de propiedad intelectual están estrictamente reservados al creador de la aplicación.</p>
+          <p class="rights-notice">⚖️ Prohibida la reproducción total o parcial sin autorización expresa del autor.</p>
+        </div>
+      </div>
+    </footer>
+  </div>

@@ -1,0 +1,133 @@
+<div class="estadisticas-container">
+  <h2>Estadísticas de Uso</h2>
+
+  <!-- Apartado de tipo de evento -->
+  <div class="evento-selector" style="margin-bottom: 1em;">
+    Mostrando estadísticas de
+    <select [(ngModel)]="tipoEventoSeleccionado" (change)="cambiarTipoEvento()">
+      <option *ngFor="let tipo of tiposEvento" [value]="tipo">{{ tipo | titlecase }}</option>
+    </select>
+  </div>
+  <!-- Selector de rango -->
+  <div class="rango-selector">
+    <button [class.active]="rango==='dia'" (click)="setRango('dia')">1 Día</button>
+    <button [class.active]="rango==='semana'" (click)="setRango('semana')">1 Semana</button>
+    <button [class.active]="rango==='mes'" (click)="setRango('mes')">1 Mes</button>
+    <button [class.active]="rango==='anio'" (click)="setRango('anio')">Año</button>
+  </div>  <!-- Selector de fecha específica (solo visible cuando el rango es 'dia') -->
+  <div class="fecha-selector" *ngIf="rango === 'dia'" style="margin-bottom: 1em;">
+    <label for="fechaInput">Seleccionar fecha: </label>
+    <input 
+      id="fechaInput"
+      type="date" 
+      [(ngModel)]="fechaSeleccionada" 
+      (change)="cambiarFecha()"
+      (input)="cambiarFecha()"
+      style="padding: 6px; margin-left: 8px; border-radius: 4px; border: 1px solid #cfd8dc;"
+      [max]="fechaMaxima">
+    <small style="margin-left: 8px; color: #666;">Fecha seleccionada: {{ fechaSeleccionada }}</small>
+  </div><!-- Gráfica real -->
+  <div class="grafica-usuarios">
+    <div *ngIf="cargando" style="text-align: center; padding: 2rem; color: #666;">
+      Cargando estadísticas...
+    </div>
+    
+    <div *ngIf="error" style="text-align: center; padding: 2rem; color: #d32f2f; background-color: #ffebee; border-radius: 4px; margin-bottom: 1rem;">
+      {{ error }}
+    </div>
+    
+    <div *ngIf="!cargando && !error && datosGrafica.length === 0" style="text-align: center; padding: 2rem; color: #666; background-color: #f5f5f5; border-radius: 4px; margin-bottom: 1rem;">
+      No hay datos para mostrar en el período seleccionado
+    </div>
+    
+    <svg *ngIf="!cargando && !error && datosGrafica.length > 0" width="100%" height="200" viewBox="0 0 650 200"><!-- Líneas indicadoras del eje Y -->
+      <ng-container *ngFor="let valor of valoresEjeY; let i = index">
+        <line 
+          x1="40" 
+          [attr.y1]="calcularPosicionY(valor)" 
+          x2="45" 
+          [attr.y2]="calcularPosicionY(valor)" 
+          stroke="#ccc" 
+          stroke-width="1"/>
+        <text 
+          x="35" 
+          [attr.y]="calcularPosicionY(valor) + 5" 
+          font-size="9" 
+          text-anchor="end" 
+          fill="#666">{{valor}}</text>
+        <!-- Línea horizontal de referencia -->
+        <line 
+          x1="45" 
+          [attr.y1]="calcularPosicionY(valor)" 
+          x2="640" 
+          [attr.y2]="calcularPosicionY(valor)" 
+          stroke="#f0f0f0" 
+          stroke-width="0.5" 
+          *ngIf="valor > 0"/>
+      </ng-container>
+      
+      <!-- Línea de datos principal -->
+      <polyline
+        [attr.points]="puntosGraficaConMargen"
+        fill="none" stroke="#4f8cff" stroke-width="3"/>
+        
+      <!-- Etiquetas del eje X -->
+      <ng-container *ngFor="let label of labelsGrafica; let i = index">
+        <text *ngIf="rango === 'dia' || i % calcularSalto(labelsGrafica.length) === 0 || i === labelsGrafica.length-1"
+              [attr.x]="50 + i*590/(labelsGrafica.length-1)"
+              y="195" font-size="10" text-anchor="middle">{{label}}</text>
+      </ng-container>
+    </svg>
+    <div class="grafica-info">
+      <span>Total {{tipoEventoSeleccionado | titlecase}}: <b>{{totalUsuarios}}</b></span>
+    </div>
+  </div>
+
+  <!-- Tabla de registros reales -->
+  <div class="usuarios-conectados">
+    <div class="tabla-controles">
+      <label>
+        Mostrar
+        <select [(ngModel)]="cantidadMostrar">
+          <option *ngFor="let op of opcionesCantidad" [value]="op">{{op}}</option>
+        </select>
+        registros
+      </label>
+      <input type="text" [(ngModel)]="filtroNombre" placeholder="Buscar usuario..." />
+    </div>
+    <div class="tabla-usuarios">
+      <div class="tabla-cabecera">
+        <span>Usuario ID</span>
+        <span>Fecha</span>
+        <span>Evento</span>
+        <span>Dispositivo</span>
+        <span>Navegador</span>
+        <span>IP</span>
+      </div>
+      <div *ngFor="let reg of registrosFiltrados" class="tabla-fila" (click)="abrirModal(reg)">
+        <span [title]="reg.usuario_id">{{reg.usuario_id}}</span>
+        <span [title]="reg.fecha_evento | date:'short'">{{reg.fecha_evento | date:'short'}}</span>
+        <span [title]="reg.tipo_evento">{{reg.tipo_evento}}</span>
+        <span [title]="reg.dispositivo">{{reg.dispositivo && reg.dispositivo.length > 20 ? (reg.dispositivo | slice:0:20) + '…' : (reg.dispositivo || '-')}}</span>
+        <span [title]="reg.navegador">{{reg.navegador && reg.navegador.length > 20 ? (reg.navegador | slice:0:20) + '…' : (reg.navegador || '-')}}</span>
+        <span [title]="reg.ip">{{reg.ip && reg.ip.length > 20 ? (reg.ip | slice:0:20) + '…' : (reg.ip || '-')}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de detalle de registro -->
+  <div class="modal-registro" *ngIf="registroSeleccionado" (click)="cerrarModal()">
+    <div class="modal-contenido" (click)="$event.stopPropagation()">
+      <h3>Detalle del Registro</h3>
+      <div class="detalle-campo"><b>ID:</b> {{registroSeleccionado.id != null ? registroSeleccionado.id : '-'}}</div>
+      <div class="detalle-campo"><b>Usuario ID:</b> {{registroSeleccionado.usuario_id != null ? registroSeleccionado.usuario_id : '-'}}</div>
+      <div class="detalle-campo"><b>Fecha:</b> {{registroSeleccionado.fecha_evento ? (registroSeleccionado.fecha_evento | date:'full') : '-'}}</div>
+      <div class="detalle-campo"><b>Evento:</b> {{registroSeleccionado.tipo_evento != null ? registroSeleccionado.tipo_evento : '-'}}</div>
+      <div class="detalle-campo"><b>Dispositivo:</b> {{registroSeleccionado.dispositivo != null ? registroSeleccionado.dispositivo : '-'}}</div>
+      <div class="detalle-campo"><b>Navegador:</b> {{registroSeleccionado.navegador != null ? registroSeleccionado.navegador : '-'}}</div>
+      <div class="detalle-campo"><b>IP:</b> {{registroSeleccionado.ip != null ? registroSeleccionado.ip : '-'}}</div>
+      <div class="detalle-campo"><b>Éxito:</b> {{registroSeleccionado.exito === true ? 'Sí' : (registroSeleccionado.exito === false ? 'No' : '-')}}</div>
+      <button (click)="cerrarModal()">Cerrar</button>
+    </div>
+  </div>
+</div>

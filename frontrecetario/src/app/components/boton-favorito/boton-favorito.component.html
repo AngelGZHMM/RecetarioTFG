@@ -1,0 +1,31 @@
+
+<button 
+  [class]="iconoClase"
+  [disabled]="cargando"
+  (click)="alternarFavorito()"
+  [title]="textoBoton"
+  type="button">
+  
+  <!-- Contenedor del corazón con contador -->
+  <div class="boton-favorito__corazon-container">
+    <!-- Icono de corazón -->
+    <i [class]="iconoCorazon" aria-hidden="true"></i>
+    
+    <!-- Contador de favoritos dentro del corazón -->
+    <span *ngIf="totalFavoritos > 0" class="boton-favorito__contador-interno">
+      {{ totalFavoritos }}
+    </span>
+  </div>
+
+  <!-- Spinner de carga -->
+  <i *ngIf="cargando" 
+     class="fas fa-spinner fa-spin boton-favorito__spinner" 
+     aria-hidden="true">
+  </i>
+
+  <!-- Texto opcional -->
+  <span *ngIf="mostrarTexto" class="boton-favorito__texto">
+    {{ textoBoton }}
+  </span>
+ 
+</button>
